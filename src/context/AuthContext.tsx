@@ -11,6 +11,7 @@ interface AuthValue {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (name: string, email: string, password: string) => Promise<{ needsConfirmation: boolean }>
+  resendConfirmation: (email: string) => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -66,6 +67,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { needsConfirmation: !data.session }
   }
 
+  async function resendConfirmation(email: string) {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` },
+    })
+    if (error) throw new Error(translate(error.message))
+  }
+
   async function signOut() {
     await supabase.auth.signOut()
   }
@@ -79,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signIn,
         signUp,
+        resendConfirmation,
         signOut,
         refreshProfile: loadProfile,
       }}
@@ -102,5 +113,8 @@ function translate(msg: string): string {
   if (m.includes('password should be at least')) return 'A senha precisa ter pelo menos 6 caracteres.'
   if (m.includes('unable to validate email') || m.includes('invalid email')) return 'E-mail inválido.'
   if (m.includes('email not confirmed')) return 'Confirme seu e-mail antes de entrar.'
+  if (m.includes('rate limit') || m.includes('only request this after') || m.includes('too many requests') || m.includes('over_email_send_rate_limit')) {
+    return 'Muitas tentativas em pouco tempo. Aguarde um instante e tente de novo.'
+  }
   return msg
 }

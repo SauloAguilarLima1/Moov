@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/ui/Button'
+import { ConfirmPending } from '../components/ConfirmPending'
 
 type Mode = 'login' | 'signup'
 
@@ -13,6 +14,7 @@ export function Landing() {
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [loading, setLoading] = useState(false)
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null)
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -23,8 +25,7 @@ export function Landing() {
       } else {
         const { needsConfirmation } = await signUp(name.trim(), email.trim(), password)
         if (needsConfirmation) {
-          setInfo('Conta criada! Enviamos um e-mail de confirmação — confirme e depois entre.')
-          setMode('login')
+          setPendingEmail(email.trim())
         }
       }
       // Em caso de sucesso com sessão, o redirect acontece pelo guard de rota.
@@ -58,6 +59,13 @@ export function Landing() {
       {/* AUTH CARD */}
       <section className="landing-auth">
         <div className="auth-card card">
+          {pendingEmail ? (
+            <ConfirmPending
+              email={pendingEmail}
+              onBack={() => { setPendingEmail(null); setMode('login'); setError(''); setInfo('') }}
+            />
+          ) : (
+          <>
           <div className="segmented" style={{ marginBottom: 'var(--s-xl)' }}>
             <button className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); setInfo('') }}>Entrar</button>
             <button className={mode === 'signup' ? 'active' : ''} onClick={() => { setMode('signup'); setError(''); setInfo('') }}>Criar conta</button>
@@ -97,6 +105,8 @@ export function Landing() {
               {mode === 'login' ? 'Criar conta' : 'Entrar'}
             </button>
           </p>
+          </>
+          )}
         </div>
         <p className="auth-secure t-caption">🔒 Seus dados ficam isolados por usuário (RLS no Supabase).</p>
       </section>
