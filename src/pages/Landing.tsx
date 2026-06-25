@@ -25,7 +25,12 @@ export function Landing() {
       } else {
         const { needsConfirmation } = await signUp(name.trim(), email.trim(), password)
         if (needsConfirmation) {
-          setPendingEmail(email.trim())
+          // O e-mail é confirmado automaticamente no banco — então já entramos direto.
+          try {
+            await signIn(email.trim(), password)
+          } catch {
+            setPendingEmail(email.trim()) // fallback (caso a confirmação volte a ser exigida)
+          }
         }
       }
       // Em caso de sucesso com sessão, o redirect acontece pelo guard de rota.
