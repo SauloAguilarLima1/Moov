@@ -54,7 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: {
+        data: { name },
+        // Após confirmar o e-mail, volta para o próprio site publicado
+        // (e não para o localhost padrão do Supabase).
+        emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+      },
     })
     if (error) throw new Error(translate(error.message))
     // Se o projeto exige confirmação de e-mail, não vem sessão.

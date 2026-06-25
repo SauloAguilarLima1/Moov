@@ -1,0 +1,79 @@
+<!--
+  Moov — template de e-mail "Confirm signup" (Supabase).
+  Cole o conteúdo abaixo em: Supabase → Authentication → Emails → "Confirm signup" (Message body / HTML).
+  Mantenha a variável {{ .ConfirmationURL }} — é o link de confirmação gerado pelo Supabase.
+  Assunto sugerido: Confirme seu e-mail no Moov
+-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f6;margin:0;padding:24px 0;">
+  <tr>
+    <td align="center">
+      <!-- preheader oculto -->
+      <span style="display:none;max-height:0;overflow:hidden;opacity:0;">Confirme seu e-mail para começar a usar o Moov.</span>
+
+      <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="width:480px;max-width:480px;background:#ffffff;border-radius:18px;overflow:hidden;font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+        <!-- HEADER navy premium -->
+        <tr>
+          <td bgcolor="#123d91" style="background:#123d91;background:linear-gradient(135deg,#1e5eff 0%,#123d91 60%,#081f4d 100%);padding:30px 32px;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="vertical-align:middle;">
+                  <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                    <td bgcolor="#1e5eff" width="38" height="38" align="center" style="background:#1e5eff;border-radius:10px;color:#ffffff;font-size:20px;font-weight:800;">M</td>
+                    <td style="padding-left:12px;color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">Moov</td>
+                  </tr></table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- CORPO -->
+        <tr>
+          <td style="padding:34px 32px 12px 32px;">
+            <h1 style="margin:0 0 10px 0;font-size:23px;line-height:1.25;color:#0e1726;font-weight:800;letter-spacing:-0.5px;">Bem-vindo ao Moov!</h1>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#4a5260;">
+              Falta só um passo: confirme seu e-mail para ativar sua conta e começar a organizar suas finanças.
+            </p>
+          </td>
+        </tr>
+
+        <!-- BOTÃO -->
+        <tr>
+          <td style="padding:24px 32px 8px 32px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+              <td align="center" bgcolor="#1e5eff" style="background:#1e5eff;background:linear-gradient(180deg,#1e5eff,#123d91);border-radius:14px;">
+                <a href="{{ .ConfirmationURL }}" target="_blank"
+                   style="display:block;padding:15px 24px;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:14px;">
+                  Confirmar meu e-mail
+                </a>
+              </td>
+            </tr></table>
+          </td>
+        </tr>
+
+        <!-- LINK FALLBACK -->
+        <tr>
+          <td style="padding:8px 32px 24px 32px;">
+            <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6e7582;">
+              Se o botão não funcionar, copie e cole este endereço no navegador:<br>
+              <a href="{{ .ConfirmationURL }}" target="_blank" style="color:#1e5eff;word-break:break-all;">{{ .ConfirmationURL }}</a>
+            </p>
+          </td>
+        </tr>
+
+        <tr><td style="padding:0 32px;"><div style="height:1px;background:#e6eaf1;"></div></td></tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td style="padding:20px 32px 30px 32px;">
+            <p style="margin:0 0 6px 0;font-size:12px;line-height:1.6;color:#8a92a0;">
+              Se você não criou uma conta no Moov, pode ignorar este e-mail com segurança.
+            </p>
+            <p style="margin:0;font-size:12px;color:#aab2c0;">Moov · suas finanças, em movimento.</p>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>
