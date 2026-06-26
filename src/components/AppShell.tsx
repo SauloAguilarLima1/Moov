@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { FAB } from './ui/FAB'
 import { TransactionForm } from './forms/TransactionForm'
 import type { TxType } from '../types/db'
@@ -13,6 +13,8 @@ const NAV = [
 
 export function AppShell() {
   const [tx, setTx] = useState<{ open: boolean; type: TxType }>({ open: false, type: 'expense' })
+  const { pathname } = useLocation()
+  const activeIndex = NAV.findIndex((n) => (n.end ? pathname === n.to : pathname.startsWith(n.to)))
 
   return (
     <div className="shell">
@@ -41,8 +43,13 @@ export function AppShell() {
         </div>
       </main>
 
-      {/* Bottom nav (mobile) */}
+      {/* Bottom nav (mobile) — pílula flutuante com vidro + brilho na troca */}
       <nav className="bottom-nav">
+        {activeIndex >= 0 && (
+          <span className="bn-indicator" style={{ transform: `translateX(calc(${activeIndex} * 100%))` }} aria-hidden>
+            <span key={pathname} className="bn-sheen" />
+          </span>
+        )}
         {NAV.map((n) => {
           const Icon = n.icon
           return (

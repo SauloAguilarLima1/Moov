@@ -4,27 +4,28 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
 import { useData } from '../context/DataContext'
-import { MonthSwitcher } from '../components/MonthSwitcher'
+import { PeriodSwitcher } from '../components/PeriodSwitcher'
+import { monthPeriod, inPeriod, type Period } from '../lib/period'
 import { formatBRL } from '../lib/format'
 import { argbToHex } from '../lib/colors'
 import type { Transaction, Tag as TagT, Category } from '../types/db'
 import type { TransactionTag } from '../lib/db'
 
 type Tab = 'categorias' | 'balanco' | 'tags'
+type ChartType = 'pie' | 'bar'
 
 interface Slice { name: string; value: number; color: string }
 
 export function Reports() {
   const { transactions, txTags, categories, tags, categoryById } = useData()
-  const [month, setMonth] = useState(new Date())
+  const [period, setPeriod] = useState<Period>(() => monthPeriod(new Date()))
   const [tab, setTab] = useState<Tab>('categorias')
+  const [expChart, setExpChart] = useState<ChartType>('pie')
+  const [incChart, setIncChart] = useState<ChartType>('pie')
 
   const monthTx = useMemo(
-    () => transactions.filter((t) => {
-      const d = new Date(t.date)
-      return t.status === 'cleared' && d.getMonth() === month.getMonth() && d.getFullYear() === month.getFullYear()
-    }),
-    [transactions, month],
+    () => transactions.filter((t) => t.status === 'cleared' && inPeriod(t.date, period)),
+    [transactions, period],
   )
 
   function byCategory(type: 'income' | 'expense'): Slice[] {
@@ -50,7 +51,7 @@ export function Reports() {
   return (
     <div className="page">
       <header className="screen-head"><h1 className="t-h1">Relatórios</h1></header>
-      <MonthSwitcher value={month} onChange={setMonth} />
+      <PeriodSwitcher value={period} onChange={setPeriod} />
 
       <div className="tabs">
         <button className={tab === 'categorias' ? 'active' : ''} onClick={() => setTab('categorias')}>Categorias</button>
@@ -60,8 +61,8 @@ export function Reports() {
 
       {tab === 'categorias' && (
         <div className="stack">
-          <DonutCard title="Despesas" data={expenses} total={saidas} />
-          <DonutCard title="Receitas" data={incomes} total={entradas} />
+          <CategoryCard title="Despesas" data={expenses} total={saidas} chart={expChart} onToggle={() => setExpChart((c) => (c === 'pie' ? 'bar' : 'pie'))} />
+          <CategoryCard title="Receitas" data={incomes} total={entradas} chart={incChart} onToggle={() => setIncChart((c) => (c === 'pie' ? 'bar' : 'pie'))} />
         </div>
       )}
 
@@ -98,28 +99,56 @@ export function Reports() {
   )
 }
 
-function DonutCard({ title, data, total }: { title: string; data: Slice[]; total: number }) {
+function CategoryCard({ title, data, total, chart, onToggle }: {
+  title: string; data: Slice[]; total: number; chart: ChartType; onToggle: () => void
+}) {
   return (
     <div className="card">
-      <h2 className="t-section">{title}</h2>
+      <div className="card-head">
+        <h2 className="t-section">{title}</h2>
+        {data.length > 0 && (
+          <button
+            className="chart-toggle"
+            onClick={onToggle}
+            aria-label={chart === 'pie' ? 'Ver em barras' : 'Ver em pizza'}
+            title={chart === 'pie' ? 'Ver em barras' : 'Ver em pizza'}
+          >
+            {chart === 'pie' ? <IconBars /> : <IconPie />}
+          </button>
+        )}
+      </div>
       {data.length === 0 ? (
         <div className="list-empty">Não há dados disponíveis no período</div>
       ) : (
         <>
-          <div className="donut-wrap">
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={data} dataKey="value" nameKey="name" innerRadius={62} outerRadius={92} paddingAngle={2} stroke="none">
-                  {data.map((d, i) => <Cell key={i} fill={d.color} />)}
-                </Pie>
-                <Tooltip formatter={(v) => formatBRL(v as number)} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="donut-center">
-              <span className="t-caption">Total</span>
-              <strong className="tnum">{formatBRL(total)}</strong>
+          {chart === 'pie' ? (
+            <div className="donut-wrap">
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={data} dataKey="value" nameKey="name" innerRadius={62} outerRadius={92} paddingAngle={2} stroke="none">
+                    {data.map((d, i) => <Cell key={i} fill={d.color} />)}
+                  </Pie>
+                  <Tooltip formatter={(v) => formatBRL(v as number)} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="donut-center">
+                <span className="t-caption">Total</span>
+                <strong className="tnum">{formatBRL(total)}</strong>
+              </div>
             </div>
-          </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={data.map((d) => ({ ...d, v: d.value / 100 }))} margin={{ left: 4, right: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef1f6" />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                <YAxis tickFormatter={(v) => `R$${v}`} tickLine={false} axisLine={false} width={64} />
+                <Tooltip formatter={(v) => formatBRL(Math.round((v as number) * 100))} />
+                <Bar dataKey="v" radius={[8, 8, 0, 0]}>
+                  {data.map((d, i) => <Cell key={i} fill={d.color} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
           <div className="legend">
             {data.map((d) => (
               <div key={d.name} className="legend-row">
@@ -134,6 +163,13 @@ function DonutCard({ title, data, total }: { title: string; data: Slice[]; total
       )}
     </div>
   )
+}
+
+function IconBars() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 20V10M12 20V4M19 20v-7" /></svg>
+}
+function IconPie() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v9l7 4" /><circle cx="12" cy="12" r="9" /></svg>
 }
 
 function TagsReport({ monthTx, txTags, tags }: {

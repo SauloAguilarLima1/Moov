@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import type {
-  Account, Card, Category, Tag, Transaction, Profile,
+  Account, Card, Category, Tag, Transaction, Profile, CardInvoicePayment,
 } from '../types/db'
 
 // Nota: nas inserções não passamos user_id — a coluna tem DEFAULT auth.uid()
@@ -96,6 +96,18 @@ export async function updateTransaction(id: string, patch: Partial<Transaction>)
 }
 export async function deleteTransaction(id: string) {
   const { error } = await supabase.from('transactions').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+/* ---------------------- card_invoice_payments ----------------------- */
+export async function getCardInvoicePayments(): Promise<CardInvoicePayment[]> {
+  return unwrap(await supabase.from('card_invoice_payments').select('*').order('paid_date'))
+}
+export async function createCardInvoicePayment(p: Partial<CardInvoicePayment>) {
+  return unwrap(await supabase.from('card_invoice_payments').insert(p).select().single())
+}
+export async function deleteCardInvoicePayment(id: string) {
+  const { error } = await supabase.from('card_invoice_payments').delete().eq('id', id)
   if (error) throw new Error(error.message)
 }
 

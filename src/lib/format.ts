@@ -40,6 +40,15 @@ export function monthName(monthIndex0: number): string {
   return monthNames[((monthIndex0 % 12) + 12) % 12]
 }
 
+const monthShortNames = [
+  'jan', 'fev', 'mar', 'abr', 'mai', 'jun',
+  'jul', 'ago', 'set', 'out', 'nov', 'dez',
+]
+
+export function monthShort(monthIndex0: number): string {
+  return monthShortNames[((monthIndex0 % 12) + 12) % 12]
+}
+
 /** "5 de junho" */
 export function formatDayMonth(iso: string): string {
   const d = new Date(iso)

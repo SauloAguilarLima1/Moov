@@ -65,6 +65,18 @@ export interface Transaction {
   created_at: string
 }
 
+/** Pagamento de fatura de cartão (registro de caixa do pagamento). */
+export interface CardInvoicePayment {
+  id: string
+  user_id: string
+  card_id: string
+  period_key: string // 'YYYY-MM' do fechamento
+  paid_date: string // ISO (data do pagamento)
+  account_id: string | null // conta de onde saiu o dinheiro
+  amount: number // centavos, snapshot no momento do pagamento
+  created_at: string
+}
+
 /** Conta com saldo calculado (inicial + lançamentos cleared). */
 export interface AccountWithBalance extends Account {
   balance: number
